@@ -73,6 +73,10 @@ function App() {
             <td>{doc.data().fees}</td>
             <td>{dateFormatter(doc.data().date)}</td>
             <td>{doc.data().remarks}</td>
+            <td>
+              <button className='btn btn-success mr-1' data-value={doc.id}>Edit</button>
+              <button className='btn btn-danger' data-value={doc.id}>Delete</button>
+            </td>
           </tr>
         );
 
@@ -124,6 +128,7 @@ function App() {
                 <th scope="col">Date</th>
                 <th scope="col">Fees</th>
                 <th scope="col">Remarks</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
 
