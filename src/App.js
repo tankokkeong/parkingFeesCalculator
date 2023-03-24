@@ -34,6 +34,19 @@ function App() {
   const [parkingFeesRecords, setParkingFeesRecords] = useState(defaultRecord);
   const [isRead, setIsRead] = useState(false);
 
+  const dateFormatter = (dateInput) =>{
+    var date = new Date(dateInput);
+
+    var months_array = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    // Get date, month, and year
+    var day = date.getDate(); 
+    var month = months_array[date.getMonth()];
+    var year = date.getFullYear();
+
+    return day + "/" +  month + "/" + year;
+  };
+
   const handleSubmit = async () => {
     console.log(fees, date, remarks);
     // Add a new document in collection "cities"
@@ -58,7 +71,7 @@ function App() {
           <tr>
             <td>{loopCount}</td>
             <td>{doc.data().fees}</td>
-            <td>{doc.data().date}</td>
+            <td>{dateFormatter(doc.data().date)}</td>
             <td>{doc.data().remarks}</td>
           </tr>
         );
