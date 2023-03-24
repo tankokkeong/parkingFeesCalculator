@@ -1,8 +1,7 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { doc, setDoc } from "firebase/firestore"; 
+import { doc, setDoc, getFirestore, onSnapshot, collection, query, where,} from "firebase/firestore"; 
 
 function App() {
   // Your web app's Firebase configuration
@@ -20,10 +19,20 @@ function App() {
   // Initialize Cloud Firestore and get a reference to the service
   const db = getFirestore(app);
 
+  const defaultRecord = (
+    <tr>
+      <td>No Records yet</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  );
+
   const [fees, setFees] = useState("");
   const [date, setDate] = useState("");
   const [remarks, setRemarks] = useState("");
-  const [parkingFeesRecords, setParkingFeesRecords] = useState("");
+  const [parkingFeesRecords, setParkingFeesRecords] = useState(defaultRecord);
+  const [isRead, setIsRead] = useState(false);
 
   const handleSubmit = async () => {
     console.log(fees, date, remarks);
@@ -35,6 +44,38 @@ function App() {
       remarks: remarks
     });
   };
+
+  const readRecords = () => {
+    onSnapshot(collection(db, "parkingFeesRecords"), (querySnapshot) => {
+      var loopCount = 1;
+      const array = [];
+
+      querySnapshot.forEach((doc) => {
+        console.log(doc.data())
+        const No = loopCount;
+
+        const record = (
+          <tr>
+            <td>{loopCount}</td>
+            <td>{doc.data().fees}</td>
+            <td>{doc.data().date}</td>
+            <td>{doc.data().remarks}</td>
+          </tr>
+        );
+
+        array.push(record);
+      });
+
+      setParkingFeesRecords(array);
+    });
+  };
+
+  useEffect(() => {
+    if(!isRead){
+      readRecords();
+      setIsRead(true);
+    }
+  });
 
   return (
     <div className="App">
@@ -74,7 +115,7 @@ function App() {
             </thead>
 
             <tbody>
-              
+              {parkingFeesRecords}
             </tbody>
           </table>
         </div>
