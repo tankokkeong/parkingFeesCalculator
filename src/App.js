@@ -1,7 +1,8 @@
 import './App.css';
+import {dateFormatter, dateInputFormatter} from '../src/pages/helper';
 import { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { doc, setDoc, getFirestore, onSnapshot, collection, query, where,} from "firebase/firestore"; 
+import { doc, setDoc, getFirestore, onSnapshot, collection, updateDoc, query, where, getDoc} from "firebase/firestore"; 
 
 function App() {
   // Your web app's Firebase configuration
@@ -31,21 +32,12 @@ function App() {
   const [fees, setFees] = useState("");
   const [date, setDate] = useState("");
   const [remarks, setRemarks] = useState("");
+  const [updateFees, setUpdateFees] = useState("");
+  const [updateDate, setUpdateDate] = useState("");
+  const [updateRemark, setUpdateRemark] = useState("");
   const [parkingFeesRecords, setParkingFeesRecords] = useState(defaultRecord);
   const [isRead, setIsRead] = useState(false);
-
-  const dateFormatter = (dateInput) =>{
-    var date = new Date(dateInput);
-
-    var months_array = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    // Get date, month, and year
-    var day = date.getDate(); 
-    var month = months_array[date.getMonth()];
-    var year = date.getFullYear();
-
-    return day + "/" +  month + "/" + year;
-  };
+  const [currentEditID, setCurrentEditID] = useState("");
 
   const handleSubmit = async () => {
     console.log(fees, date, remarks);
@@ -54,37 +46,80 @@ function App() {
     await setDoc(doc(db, "parkingFeesRecords", uuid), {
       fees: fees,
       date: Date(date),
-      remarks: remarks
+      remarks: remarks,
+      deletedAt: ""
     });
   };
 
   const readRecords = () => {
-    onSnapshot(collection(db, "parkingFeesRecords"), (querySnapshot) => {
+    onSnapshot(query(collection(db, "parkingFeesRecords"), where("deletedAt", "==", "")), (querySnapshot) => {
       var loopCount = 1;
       const array = [];
 
       querySnapshot.forEach((doc) => {
-        console.log(doc.data())
-        const No = loopCount;
 
         const record = (
           <tr>
             <td>{loopCount}</td>
-            <td>{doc.data().fees}</td>
             <td>{dateFormatter(doc.data().date)}</td>
+            <td>{doc.data().fees}</td>
             <td>{doc.data().remarks}</td>
             <td>
-              <button className='btn btn-success mr-1' data-value={doc.id}>Edit</button>
-              <button className='btn btn-danger' data-value={doc.id}>Delete</button>
+              <button className='btn btn-success mr-1' data-toggle="modal" data-target="#editModal" onClick={() => {readExistingRecord(doc.id)}}>Edit</button>
+              <button className='btn btn-danger' onClick={() => {deleteRecord(doc.id)}}>Delete</button>
             </td>
           </tr>
         );
 
         array.push(record);
+
+        loopCount++;
       });
 
       setParkingFeesRecords(array);
     });
+  };
+
+  const readExistingRecord = async(id) => {
+    const docRef = doc(db, "parkingFeesRecords", id);
+    const docSnap = await getDoc(docRef);
+
+    setCurrentEditID(id);
+
+    if (docSnap.exists()) {
+
+      //Set Data
+      setUpdateFees(docSnap.data().fees);
+      setUpdateDate(docSnap.data().date);
+      setUpdateRemark(docSnap.data().remarks);
+    } else {
+      // doc.data() will be undefined in this case
+      console.log("No such document!");
+    }
+
+  };
+
+  const updateRecord = async (id) => {
+      // Create an initial document to update.
+      const DocRef = doc(db, "parkingFeesRecords", id);
+
+      await updateDoc(DocRef, {
+          fees: updateFees,
+          date: Date(updateDate),
+          remarks: updateRemark,
+      });
+  };
+
+  const deleteRecord = async (id) => {
+
+    if (window.confirm("Do you want to delete this record??")) {
+      // Create an initial document to update.
+      const DocRef = doc(db, "parkingFeesRecords", id);
+      await updateDoc(DocRef, {
+          deletedAt: Date()
+      });
+    }
+
   };
 
   useEffect(() => {
@@ -97,7 +132,7 @@ function App() {
   return (
     <div className="App">
       <div className='content-container'>
-        <div className="fees-form-container bg-light rounded">
+        <div className="fees-form-container bg-light rounded mb-3">
 
           <div className="form-group">
             <label>Fees</label>
@@ -137,8 +172,50 @@ function App() {
             </tbody>
           </table>
         </div>
+
+        <div className="price-analysis-container">
+
+        </div>
       </div>
 
+    {/* Modal */}
+    <div className="modal fade" id="editModal" tabIndex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div className="modal-dialog">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title" id="exampleModalLabel">Update Record</h5>
+            <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div className="modal-body">
+            <div className="form-group">
+              <label>Fees</label>
+              <input type="number" className="form-control" onChange={(e) => {setUpdateFees(e.currentTarget.value)}} defaultValue={updateFees}/>
+            </div>
+
+            <div className="form-group">
+              <label>Date</label>
+              <input type="date" id="test-date" className='form-control' onChange={(e) => {setUpdateDate(e.currentTarget.value)}} value={dateInputFormatter(updateDate)}/>
+            </div>
+
+            <div className="form-group">
+              <label>Remarks:</label>
+              <textarea className="form-control" rows="5" onChange={(e) => {setUpdateRemark(e.currentTarget.value)}} 
+              defaultValue={updateRemark}
+              data-value={updateRemark}
+              ></textarea>
+            </div>
+          </div>
+
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={() => {updateRecord(currentEditID)}}>Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
     </div>
   );
 }
