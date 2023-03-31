@@ -38,6 +38,8 @@ function App() {
   const [parkingFeesRecords, setParkingFeesRecords] = useState(defaultRecord);
   const [isRead, setIsRead] = useState(false);
   const [currentEditID, setCurrentEditID] = useState("");
+  const [totalAmount, setTotalAmount] = useState(0.00);
+  const [averageAmount, setAverageAmount] = useState(0.00);
 
   const handleSubmit = async () => {
     console.log(fees, date, remarks);
@@ -55,8 +57,11 @@ function App() {
     onSnapshot(query(collection(db, "parkingFeesRecords"), where("deletedAt", "==", "")), (querySnapshot) => {
       var loopCount = 1;
       const array = [];
+      var subTotal = 0;
 
       querySnapshot.forEach((doc) => {
+
+        subTotal = subTotal + parseFloat(doc.data().fees);
 
         const record = (
           <tr>
@@ -76,6 +81,8 @@ function App() {
         loopCount++;
       });
 
+      setTotalAmount(subTotal.toFixed(2));
+      setAverageAmount((subTotal/loopCount).toFixed(2))
       setParkingFeesRecords(array);
     });
   };
@@ -156,7 +163,7 @@ function App() {
         </div>
 
         <div className='calender-container ml-3'>
-          <table className="table table-bordered bg-light">
+          <table className="table table-bordered bg-light" id='record-table'>
             <thead className='thead-dark'>
               <tr>
               <th scope="col">No</th>
@@ -173,8 +180,54 @@ function App() {
           </table>
         </div>
 
-        <div className="price-analysis-container">
+        <div className="price-analysis-container bg-light rounded ml-3">
+          <div className='form-inline mb-3'>
+            <div className='mr-3 form-group'>
+              <label>Total Amount (RM):</label>
+            </div>
 
+            <div className='form-group'>
+              <input type="text" className='form-control' readOnly value={totalAmount}/>
+            </div>
+          </div>
+
+          <div className='form-inline mb-3'>
+            <div className='mr-3 form-group'>
+              <label>Average Amount (RM):</label>
+            </div>
+
+            <div className='form-group'>
+              <input type="text" className='form-control' readOnly value={averageAmount}/>
+            </div>
+          </div>
+
+          <div className='mt-3'>
+            <strong>Filter</strong>
+          </div>
+
+          <div className='form-inline mb-3'>
+            <div className='mr-3 form-group'>
+              <label>Start From:</label>
+            </div>
+
+            <div className='form-group'>
+              <input type="date" className='form-control'/>
+            </div>
+          </div>
+          
+          <div className='form-inline mb-3'>
+            <div className='mr-3 form-group'>
+              <label>To:</label>
+            </div>
+
+            <div className='form-group'>
+              <input type="date" className='form-control'/>
+            </div>
+          </div>
+
+          <div className='mt-3'>
+            <button className='btn btn-primary'>Submit</button>
+          </div>
         </div>
       </div>
 

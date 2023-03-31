@@ -22,6 +22,12 @@ body{
   height: 500px;
 }
 
+.price-analysis-container{
+  width:auto;
+  border: 1px solid black;
+  padding: 20px;
+}
+
 @media(min-width: 600px){
   .content-container{
     display: flex;
