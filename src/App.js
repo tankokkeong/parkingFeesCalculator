@@ -2,7 +2,7 @@ import './App.css';
 import {dateFormatter, dateInputFormatter} from '../src/pages/helper';
 import { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { doc, setDoc, getFirestore, onSnapshot, collection, updateDoc, query, where, getDoc} from "firebase/firestore"; 
+import { doc, setDoc, getFirestore, onSnapshot, collection, updateDoc, query, where, getDoc, getDocs} from "firebase/firestore"; 
 
 function App() {
   // Your web app's Firebase configuration
@@ -40,6 +40,8 @@ function App() {
   const [currentEditID, setCurrentEditID] = useState("");
   const [totalAmount, setTotalAmount] = useState(0.00);
   const [averageAmount, setAverageAmount] = useState(0.00);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const handleSubmit = async () => {
     console.log(fees, date, remarks);
@@ -47,7 +49,7 @@ function App() {
     var uuid = crypto.randomUUID();
     await setDoc(doc(db, "parkingFeesRecords", uuid), {
       fees: fees,
-      date: Date(date),
+      date: date,
       remarks: remarks,
       deletedAt: ""
     });
@@ -55,12 +57,13 @@ function App() {
 
   const readRecords = () => {
     onSnapshot(query(collection(db, "parkingFeesRecords"), where("deletedAt", "==", "")), (querySnapshot) => {
-      var loopCount = 1;
+      var loopCount = 0;
       const array = [];
       var subTotal = 0;
 
       querySnapshot.forEach((doc) => {
 
+        loopCount++;
         subTotal = subTotal + parseFloat(doc.data().fees);
 
         const record = (
@@ -78,7 +81,6 @@ function App() {
 
         array.push(record);
 
-        loopCount++;
       });
 
       setTotalAmount(subTotal.toFixed(2));
@@ -129,6 +131,55 @@ function App() {
 
   };
 
+  const filterRecord = async () =>{
+
+    if(fromDate !== "" || toDate !== ""){
+
+      var q;
+
+      if(fromDate !== "" && toDate !== ""){
+        q = query(collection(db, "parkingFeesRecords"), where("date", ">=", fromDate), where("date", "<=", toDate), where("deletedAt", "==", ""));
+      }
+      else if(fromDate !== "" && toDate === ""){
+        q = query(collection(db, "parkingFeesRecords"), where("date", ">=", fromDate), where("deletedAt", "==", ""));
+      }
+      else if(fromDate === "" && toDate !== ""){
+        q = query(collection(db, "parkingFeesRecords"), where("date", "<=", toDate), where("deletedAt", "==", ""));
+      }
+
+      const querySnapshot = await getDocs(q);
+      var loopCount = 0;
+      const array = [];
+      var subTotal = 0;
+
+      querySnapshot.forEach((doc) => {
+        loopCount++;
+
+        subTotal = subTotal + parseFloat(doc.data().fees);
+        const record = (
+          <tr>
+            <td>{loopCount}</td>
+            <td>{dateFormatter(doc.data().date)}</td>
+            <td>{doc.data().fees}</td>
+            <td>{doc.data().remarks}</td>
+            <td>
+              <button className='btn btn-success mr-1' data-toggle="modal" data-target="#editModal" onClick={() => {readExistingRecord(doc.id)}}>Edit</button>
+              <button className='btn btn-danger' onClick={() => {deleteRecord(doc.id)}}>Delete</button>
+            </td>
+          </tr>
+        );
+
+        array.push(record);
+
+      });
+
+      setTotalAmount(subTotal.toFixed(2));
+      setAverageAmount((subTotal/loopCount).toFixed(2))
+      setParkingFeesRecords(array);
+    
+    }
+  }
+
   useEffect(() => {
     if(!isRead){
       readRecords();
@@ -148,7 +199,7 @@ function App() {
 
           <div className="form-group">
             <label>Date</label>
-            <input type="date" className='form-control' onChange={(e) => {setDate(e.currentTarget.value)}}/>
+            <input type="date" className='form-control' onChange={(e) => {setDate(e.currentTarget.value); console.log(e.currentTarget.value);}}/>
           </div>
 
           <div className="form-group">
@@ -211,7 +262,7 @@ function App() {
             </div>
 
             <div className='form-group'>
-              <input type="date" className='form-control'/>
+              <input type="date" className='form-control' onChange={(e) => {setFromDate(e.currentTarget.value); console.log(e.currentTarget.value);}}/>
             </div>
           </div>
           
@@ -221,12 +272,12 @@ function App() {
             </div>
 
             <div className='form-group'>
-              <input type="date" className='form-control'/>
+              <input type="date" className='form-control' onChange={(e) => {setToDate(e.currentTarget.value); console.log(e.currentTarget.value);}}/>
             </div>
           </div>
 
           <div className='mt-3'>
-            <button className='btn btn-primary'>Submit</button>
+            <button className='btn btn-primary' onClick={filterRecord}>Submit</button>
           </div>
         </div>
       </div>
