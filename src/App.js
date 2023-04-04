@@ -2,7 +2,7 @@ import './App.css';
 import {dateFormatter, dateInputFormatter} from '../src/pages/helper';
 import { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
-import { doc, setDoc, getFirestore, onSnapshot, collection, updateDoc, query, where, getDoc, getDocs} from "firebase/firestore"; 
+import { doc, setDoc, getFirestore, onSnapshot, collection, updateDoc, query, where, getDoc, getDocs, orderBy} from "firebase/firestore"; 
 
 function App() {
   // Your web app's Firebase configuration
@@ -42,6 +42,7 @@ function App() {
   const [averageAmount, setAverageAmount] = useState(0.00);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [totalDays, setTotalDays] = useState(0);
 
   const handleSubmit = async () => {
     console.log(fees, date, remarks);
@@ -56,7 +57,7 @@ function App() {
   };
 
   const readRecords = () => {
-    onSnapshot(query(collection(db, "parkingFeesRecords"), where("deletedAt", "==", "")), (querySnapshot) => {
+    onSnapshot(query(collection(db, "parkingFeesRecords"), where("deletedAt", "==", ""), orderBy("date")), (querySnapshot) => {
       var loopCount = 0;
       const array = [];
       var subTotal = 0;
@@ -86,6 +87,7 @@ function App() {
       setTotalAmount(subTotal.toFixed(2));
       setAverageAmount((subTotal/loopCount).toFixed(2))
       setParkingFeesRecords(array);
+      setTotalDays(loopCount);
     });
   };
 
@@ -138,13 +140,13 @@ function App() {
       var q;
 
       if(fromDate !== "" && toDate !== ""){
-        q = query(collection(db, "parkingFeesRecords"), where("date", ">=", fromDate), where("date", "<=", toDate), where("deletedAt", "==", ""));
+        q = query(collection(db, "parkingFeesRecords"), where("date", ">=", fromDate), where("date", "<=", toDate), where("deletedAt", "==", ""), orderBy("date"));
       }
       else if(fromDate !== "" && toDate === ""){
-        q = query(collection(db, "parkingFeesRecords"), where("date", ">=", fromDate), where("deletedAt", "==", ""));
+        q = query(collection(db, "parkingFeesRecords"), where("date", ">=", fromDate), where("deletedAt", "==", ""), orderBy("date"));
       }
       else if(fromDate === "" && toDate !== ""){
-        q = query(collection(db, "parkingFeesRecords"), where("date", "<=", toDate), where("deletedAt", "==", ""));
+        q = query(collection(db, "parkingFeesRecords"), where("date", "<=", toDate), where("deletedAt", "==", ""), orderBy("date"));
       }
 
       const querySnapshot = await getDocs(q);
@@ -176,7 +178,7 @@ function App() {
       setTotalAmount(subTotal.toFixed(2));
       setAverageAmount((subTotal/loopCount).toFixed(2))
       setParkingFeesRecords(array);
-    
+      setTotalDays(loopCount);
     }
   }
 
@@ -226,6 +228,15 @@ function App() {
             </thead>
 
             <tbody>
+              {parkingFeesRecords.length === 0 && 
+                <tr>
+                  <th>-</th>
+                  <th>-</th>
+                  <th>-</th>
+                  <th>-</th>
+                  <th>No Record</th>
+                </tr>
+              }
               {parkingFeesRecords}
             </tbody>
           </table>
@@ -251,6 +262,17 @@ function App() {
               <input type="text" className='form-control' readOnly value={averageAmount}/>
             </div>
           </div>
+
+          <div className='form-inline mb-3'>
+            <div className='mr-3 form-group'>
+              <label>Total Days:</label>
+            </div>
+
+            <div className='form-group'>
+              <input type="text" className='form-control' readOnly value={totalDays}/>
+            </div>
+          </div>
+
 
           <div className='mt-3'>
             <strong>Filter</strong>

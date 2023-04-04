@@ -61,3 +61,11 @@ body{
       margin-left: 0;
   }
 }
+
+.fees-form-container{
+  max-height: 450px;
+}
+
+.price-analysis-container{
+  max-height: 400px;
+}
