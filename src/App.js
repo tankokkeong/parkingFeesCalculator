@@ -68,10 +68,9 @@ function App() {
       const completeArr = [];
       var subTotal = 0;
       var paginationCount = 0;
+      const currentPageStorage = localStorage.getItem("currentPage") === null ? 1 : localStorage.getItem("currentPage");
 
       pagination.splice(0, pagination.length);
-
-      console.log(querySnapshot._snapshot)
 
       querySnapshot.forEach((doc) => {
 
@@ -97,7 +96,7 @@ function App() {
 
         if(loopCount % 5 === 1){
           paginationCount++;
-
+          
           pagination.push(<option value={paginationCount} id={"pagination-" + paginationCount}>{paginationCount}</option>);
           const maxPagCount = paginationCount;
           setMaxPage(maxPagCount);
@@ -115,7 +114,9 @@ function App() {
       setParkingFeesRecords(array);
       setTotalDays(loopCount);
       setCompleteRecords(completeArr);
+      // paging(currentPageStorage);
     });
+    
   };
 
   const readExistingRecord = async(id) => {
@@ -229,6 +230,8 @@ function App() {
 
     index = parseInt(index);
 
+    localStorage.setItem("currentPage", index);
+
     //Set pagination index
     const preIndex = index === 1 ? 1 : index - 1;
     setPrev(preIndex);
@@ -250,6 +253,7 @@ function App() {
     }
 
     setParkingFeesRecords(array);
+
   }
 
   useEffect(() => {
