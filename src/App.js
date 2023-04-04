@@ -212,6 +212,12 @@ function App() {
           paginationCount++;
 
           pagination.push(<option value={paginationCount} id={"pagination-" + paginationCount}>{paginationCount}</option>);
+          const maxPagCount = paginationCount;
+          setMaxPage(maxPagCount);
+        }
+
+        if(loopCount > 5){
+          setNext(2);
         }
 
         completeArr.push(record);
