@@ -45,6 +45,9 @@ function App() {
   const [totalDays, setTotalDays] = useState(0);
   const [completeRecords, setCompleteRecords] = useState("");
   const [pagination, setPagination] = useState([]);
+  const [prev, setPrev] = useState(1);
+  const [next, setNext] = useState(1);
+  const [maxPage, setMaxPage] = useState(1);
 
   const handleSubmit = async () => {
     console.log(fees, date, remarks);
@@ -67,6 +70,8 @@ function App() {
       var paginationCount = 0;
 
       pagination.splice(0, pagination.length);
+
+      console.log(querySnapshot._snapshot)
 
       querySnapshot.forEach((doc) => {
 
@@ -93,17 +98,23 @@ function App() {
         if(loopCount % 5 === 1){
           paginationCount++;
 
-          pagination.push(<option value={paginationCount}>{paginationCount}</option>);
+          pagination.push(<option value={paginationCount} id={"pagination-" + paginationCount}>{paginationCount}</option>);
+          const maxPagCount = paginationCount;
+          setMaxPage(maxPagCount);
         }
-
 
         completeArr.push(record);
       });
+
+      if(loopCount > 5){
+        setNext(2);
+      }
 
       setTotalAmount(subTotal.toFixed(2));
       setAverageAmount((subTotal/loopCount).toFixed(2))
       setParkingFeesRecords(array);
       setTotalDays(loopCount);
+      setCompleteRecords(completeArr);
     });
   };
 
@@ -148,6 +159,7 @@ function App() {
     }
 
   };
+
 
   const filterRecord = async () =>{
 
@@ -198,7 +210,7 @@ function App() {
         if(loopCount % 5 === 1){
           paginationCount++;
 
-          pagination.push(<option value={paginationCount}>{paginationCount}</option>);
+          pagination.push(<option value={paginationCount} id={"pagination-" + paginationCount}>{paginationCount}</option>);
         }
 
         completeArr.push(record);
@@ -208,7 +220,36 @@ function App() {
       setAverageAmount((subTotal/loopCount).toFixed(2))
       setParkingFeesRecords(array);
       setTotalDays(loopCount);
+      setCompleteRecords(completeArr);
     }
+  }
+
+  const paging = async (index) =>{
+    const array = [];
+
+    index = parseInt(index);
+
+    //Set pagination index
+    const preIndex = index === 1 ? 1 : index - 1;
+    setPrev(preIndex);
+
+    const nextIndex = index === maxPage ? maxPage : index + 1;
+    setNext(nextIndex);
+
+    //Make option selected
+    document.getElementById("pagination-" + index).selected = "true";
+
+    index = (index - 1) * 5;
+
+    for(var i = index; i < index + 5; i++){
+
+      if(i < completeRecords.length){
+        array.push(completeRecords[i]);
+      }
+
+    }
+
+    setParkingFeesRecords(array);
   }
 
   useEffect(() => {
@@ -274,16 +315,16 @@ function App() {
           <nav aria-label="Page navigation example">
             <ul className="pagination">
               <li className="page-item">
-                <a className="page-link" href="#" aria-label="Previous">
+                <span className="page-link" aria-label="Previous" onClick={() => {paging(prev)}}>
                   <span aria-hidden="true">&laquo;</span>
-                </a>
+                </span>
               </li>
-              <select className='form-control' style={{width: "70px"}}>
+              <select className='form-control' style={{width: "70px"}} onChange={(e) => {paging(e.currentTarget.value)}}>
                 {/* <option value="1">1</option> */}
                 {pagination}
               </select>
               <li className="page-item">
-                <span className="page-link" href="#" aria-label="Next">
+                <span className="page-link" aria-label="Next" onClick={() => {paging(next)}}>
                   <span aria-hidden="true">&raquo;</span>
                 </span>
               </li>
