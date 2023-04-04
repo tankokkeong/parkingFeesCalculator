@@ -64,10 +64,9 @@ function App() {
       const array = [];
       const completeArr = [];
       var subTotal = 0;
-      var paginationCount = 1;
+      var paginationCount = 0;
 
       pagination.splice(0, pagination.length);
-      pagination.push(<option value={paginationCount}>{paginationCount}</option>);
 
       querySnapshot.forEach((doc) => {
 
@@ -91,7 +90,7 @@ function App() {
           array.push(record);
         }
 
-        if(loopCount % 5 === 0){
+        if(loopCount % 5 === 1){
           paginationCount++;
 
           pagination.push(<option value={paginationCount}>{paginationCount}</option>);
@@ -171,10 +170,9 @@ function App() {
       const array = [];
       const completeArr = [];
       var subTotal = 0;
-      var paginationCount = 1;
+      var paginationCount = 0;
 
       pagination.splice(0, pagination.length);
-      pagination.push(<option value={paginationCount}>{paginationCount}</option>);
 
       querySnapshot.forEach((doc) => {
         loopCount++;
@@ -197,11 +195,10 @@ function App() {
           array.push(record);
         }
 
-        if(loopCount % 5 === 0){
+        if(loopCount % 5 === 1){
           paginationCount++;
 
           pagination.push(<option value={paginationCount}>{paginationCount}</option>);
-          console.log("I AM IN")
         }
 
         completeArr.push(record);
