@@ -43,6 +43,8 @@ function App() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [totalDays, setTotalDays] = useState(0);
+  const [completeRecords, setCompleteRecords] = useState("");
+  const [pagination, setPagination] = useState([]);
 
   const handleSubmit = async () => {
     console.log(fees, date, remarks);
@@ -60,7 +62,12 @@ function App() {
     onSnapshot(query(collection(db, "parkingFeesRecords"), where("deletedAt", "==", ""), orderBy("date")), (querySnapshot) => {
       var loopCount = 0;
       const array = [];
+      const completeArr = [];
       var subTotal = 0;
+      var paginationCount = 1;
+
+      pagination.splice(0, pagination.length);
+      pagination.push(<option value={paginationCount}>{paginationCount}</option>);
 
       querySnapshot.forEach((doc) => {
 
@@ -68,7 +75,7 @@ function App() {
         subTotal = subTotal + parseFloat(doc.data().fees);
 
         const record = (
-          <tr>
+          <tr id={"record-row-" + loopCount}>
             <td>{loopCount}</td>
             <td>{dateFormatter(doc.data().date)}</td>
             <td>{doc.data().fees}</td>
@@ -79,9 +86,19 @@ function App() {
             </td>
           </tr>
         );
+      
+        if(loopCount <= 5){
+          array.push(record);
+        }
 
-        array.push(record);
+        if(loopCount % 5 === 0){
+          paginationCount++;
 
+          pagination.push(<option value={paginationCount}>{paginationCount}</option>);
+        }
+
+
+        completeArr.push(record);
       });
 
       setTotalAmount(subTotal.toFixed(2));
@@ -152,14 +169,19 @@ function App() {
       const querySnapshot = await getDocs(q);
       var loopCount = 0;
       const array = [];
+      const completeArr = [];
       var subTotal = 0;
+      var paginationCount = 1;
+
+      pagination.splice(0, pagination.length);
+      pagination.push(<option value={paginationCount}>{paginationCount}</option>);
 
       querySnapshot.forEach((doc) => {
         loopCount++;
 
         subTotal = subTotal + parseFloat(doc.data().fees);
         const record = (
-          <tr>
+          <tr id={"record-row-" + loopCount}>
             <td>{loopCount}</td>
             <td>{dateFormatter(doc.data().date)}</td>
             <td>{doc.data().fees}</td>
@@ -171,8 +193,18 @@ function App() {
           </tr>
         );
 
-        array.push(record);
+        if(loopCount <= 5){
+          array.push(record);
+        }
 
+        if(loopCount % 5 === 0){
+          paginationCount++;
+
+          pagination.push(<option value={paginationCount}>{paginationCount}</option>);
+          console.log("I AM IN")
+        }
+
+        completeArr.push(record);
       });
 
       setTotalAmount(subTotal.toFixed(2));
@@ -240,6 +272,26 @@ function App() {
               {parkingFeesRecords}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          <nav aria-label="Page navigation example">
+            <ul className="pagination">
+              <li className="page-item">
+                <a className="page-link" href="#" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              <select className='form-control' style={{width: "70px"}}>
+                {/* <option value="1">1</option> */}
+                {pagination}
+              </select>
+              <li className="page-item">
+                <span className="page-link" href="#" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </span>
+              </li>
+            </ul>
+          </nav>
         </div>
 
         <div className="price-analysis-container bg-light rounded ml-3">

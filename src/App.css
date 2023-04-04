@@ -69,3 +69,7 @@ body{
 .price-analysis-container{
   max-height: 400px;
 }
+
+.page-link{
+  cursor: pointer;
+}
