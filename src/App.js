@@ -144,7 +144,7 @@ function App() {
 
       await updateDoc(DocRef, {
           fees: updateFees,
-          date: Date(updateDate),
+          date: updateDate,
           remarks: updateRemark,
       });
   };
