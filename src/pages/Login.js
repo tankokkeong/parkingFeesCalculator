@@ -17,12 +17,12 @@ export function Login(){
                             No account? <a href="signup">Sign Up</a> now!
                         </div>
                         
-                        <div class="form-group" id="error-prompt" style="color:red;"></div>
+                        <div class="form-group" id="error-prompt" style={{color : "red"}}></div>
 
                         <div class="form-group mt-3">
                             <button type="submit" class="btn btn-primary" onclick="login()">Login</button>
 
-                            <div class="text-info" id="login-loader" role="status" style="display: none;">
+                            <div class="text-info" id="login-loader" role="status" style={{display : "none"}}>
                                 <span class="mt-3 ml-1 spinner-border spinner-border-sm"></span>
                                 Loading...
                             </div>
