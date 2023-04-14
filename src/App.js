@@ -1,7 +1,7 @@
 import './App.css';
 
 import { Route, Routes, Link, BrowserRouter as Router } from 'react-router-dom';
-import { Login } from './pages/Login';
+import  Login  from './pages/Login';
 import { Calculator } from './pages/Calculator';
 import { SignUp } from './pages/SignUp';
 
@@ -9,10 +9,9 @@ import { SignUp } from './pages/SignUp';
 function App() {
 
   return (
-    <div className="App">
+    <div>
 
       <Router>
-
         <Routes>
           <Route path="/" element={<Login />} />  
           <Route path="Calculator" element={<Calculator />} />  
