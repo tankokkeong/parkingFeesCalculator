@@ -62,19 +62,6 @@ export const authentication = async (email, password) =>{
     return message;
 }
 
-export const isAuthenticated = async () =>{
-    const auth = getAuth();
-    var isLoggedIn = false;
-
-    await onAuthStateChanged(auth, (user) => {
-        if (user) {
-            isLoggedIn = true;
-        }
-    });
-
-    return isLoggedIn;
-};
-
 function checkTime(i)
 {
     if(i<10)

@@ -1,13 +1,14 @@
 import { authentication, isAuthenticated } from "./helper";
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default function Login(){
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const auth = getAuth();
     const navigate = useNavigate();
-
     const Submit = async () =>{
         const message = await authentication(email, password);
 
@@ -20,17 +21,13 @@ export default function Login(){
         // console.log(message);
     };
 
-    const isAuthorized = async () => {
-        const result = await isAuthenticated();
-
-        return result;
-    }
-
     useEffect(() => {
 
-        if(isAuthorized()){
-            navigate("/Calculator", { replace: true});
-        }
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                navigate("/Calculator", { replace: true});
+            }
+        });
     });
 
     return (

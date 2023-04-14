@@ -2,6 +2,8 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc, onSnapshot, collection, updateDoc, query, where, getDoc, getDocs, orderBy} from "firebase/firestore"; 
 import {dateFormatter, dateInputFormatter} from '../pages/helper';
 import { useState, useEffect } from 'react';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useNavigate } from 'react-router-dom';
 
 export function Calculator(){
     // Your web app's Firebase configuration
@@ -18,7 +20,9 @@ export function Calculator(){
     const app = initializeApp(firebaseConfig);
     // Initialize Cloud Firestore and get a reference to the service
     const db = getFirestore(app);
-    
+    const auth = getAuth();
+    const navigate = useNavigate();
+
     const defaultRecord = (
         <tr>
             <td>No Records yet</td>
@@ -262,15 +266,21 @@ export function Calculator(){
     }
 
     useEffect(() => {
-    if(!isRead){
-        readRecords();
-        setIsRead(true);
-    }
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                navigate("/", { replace: true});
+            }
+        });
+
+        if(!isRead){
+            readRecords();
+            setIsRead(true);
+        }
     });
 
 
     return(
-        <div>
+        <div className="p-3">
             <div className='content-container'>
                 <div className="fees-form-container bg-light rounded mb-3">
 
