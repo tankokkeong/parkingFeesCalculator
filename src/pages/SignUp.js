@@ -1,39 +1,79 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword } from "firebase/auth";
+
 export function SignUp(){
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+    const auth = getAuth();
+    const navigate = useNavigate();
+
+    const CreateUser = () => {
+        //Display Loader
+        document.getElementById("signup-loader").style.display = "";
+
+        if(password !== confirmPassword){
+            setErrorMessage("Password and confirm password are different!");
+            //Remove Loader
+            document.getElementById("signup-loader").style.display = "none";
+        }
+        else{
+            createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                alert("User created successfully");
+                navigate("/Calculator", { replace: true});
+
+            })
+            .catch((error) => {
+                setErrorMessage("This email already exists");
+                //Remove Loader
+                document.getElementById("signup-loader").style.display = "none";
+            });
+        }
+    };
+
+    useEffect(() => {
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                navigate("/Calculator", { replace: true});
+            }
+        });
+    });
+
     return(
         <div id="login-container">
-            <div class="login-box">
-                <div class="login-title mt-2">
-                    <h1 class="text-center">Sign up</h1>
+            <div className="login-box">
+                <div className="login-title mt-2">
+                    <h1 className="text-center">Sign up</h1>
 
-                    <div class="input-container">
-                        <div class="form-group mt-2">
+                    <div className="input-container">
+                        <div className="form-group mt-2">
                             <label for="exampleInputEmail1">Email address</label>
-                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp" onkeyup="enterSignUp()" />
+                            <input type="email" className="form-control" id="email" aria-describedby="emailHelp" onChange={e => setEmail(e.currentTarget.value)} />
                         </div>
 
-                        <div class="form-group mt-2">
-                            <label for="exampleInputEmail1">Full Name</label>
-                            <input type="text" class="form-control" id="full-name" aria-describedby="emailHelp" onkeyup="enterSignUp()" />
-                        </div>
-
-                        <div class="form-group mt-2">
+                        <div className="form-group mt-2">
                             <label for="exampleInputPassword1">Password</label>
-                            <input type="password" class="form-control" id="password" onkeyup="enterSignUp()" />
+                            <input type="password" className="form-control" id="password" onChange={e => setPassword(e.currentTarget.value)} />
                         </div>
 
-                        <div class="form-group mt-2">
+                        <div className="form-group mt-2">
                             <label for="exampleInputPassword1">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirm-password" onkeyup="enterSignUp()" />
-                            Already have an account? <a href="login">Login now</a>!
+                            <input type="password" className="form-control" id="confirm-password" onChange={e => setConfirmPassword(e.currentTarget.value)} />
+                            Already have an account? <a href="/">Login now</a>!
                         </div>
                         
-                        <div class="form-group" id="error-prompt" style={{color : "red"}}></div>
+                        <div className="form-group" id="error-prompt" style={{color : "red"}}>{errorMessage}</div>
 
-                        <div class="form-group mt-3">
-                            <button type="submit" class="btn btn-primary" onclick="signUp()">Sign up</button>
+                        <div className="form-group mt-3">
+                            <button type="submit" className="btn btn-primary" onClick={CreateUser}>Sign up</button>
 
-                            <div class="text-info" id="signup-loader" role="status" style={{display : "none"}}>
-                                <span class="mt-3 ml-1 spinner-border spinner-border-sm"></span>
+                            <div className="text-info" id="signup-loader" role="status" style={{display : "none"}}>
+                                <span className="mt-3 ml-1 mr-3 spinner-border spinner-border-sm"></span>
                                 Loading...
                             </div>
                         </div>
