@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc, onSnapshot, collection, updateDoc, query, where, getDoc, getDocs, orderBy} from "firebase/firestore"; 
-import {dateFormatter, dateInputFormatter, getCookie} from '../pages/helper';
+import {dateFormatter, dateInputFormatter, getCookie, getCurrentTime} from '../pages/helper';
 import { useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from 'react-router-dom';
@@ -43,6 +43,7 @@ export function Calculator(){
     const [next, setNext] = useState(1);
     const [maxPage, setMaxPage] = useState(1);
     const [userInfo, setUserInfo] = useState({email: "", uid: ""});
+    const [activityLogs, setActivityLogs] = useState(["No Activity yet"]);
     var loopCount = 0;
 
     const handleSubmit = async () => {
@@ -60,6 +61,7 @@ export function Calculator(){
         });
 
         setIsRead(false);
+        addLog("A new record is added");
     };
 
     const readRecords = () => {
@@ -144,6 +146,8 @@ export function Calculator(){
         const userCollection = collection(db, "parkingFeesRecords" , userUID, "fees")
         const userDoc = doc(userCollection, id);
 
+        addLog("A record is updated");
+        
         await updateDoc(userDoc, {
             fees: updateFees,
             date: updateDate,
@@ -157,9 +161,11 @@ export function Calculator(){
         // Create an initial document to update.
         const userCollection = collection(db, "parkingFeesRecords" , userInfo.uid, "fees")
         const userDoc = doc(userCollection, id);
+        addLog("A record is deleted");
         await updateDoc(userDoc, {
             deletedAt: Date()
         });
+
     }
 
     };
@@ -257,6 +263,20 @@ export function Calculator(){
 
         setParkingFeesRecords(array);
     }
+
+    const addLog = (activity) => {
+        if(activityLogs[0] === "No Activity yet"){
+            activityLogs.splice(0, activityLogs.length);
+        }
+        else if(activityLogs.length === 5){
+            activityLogs.splice(0, 1);
+        }
+
+        activityLogs.push(activity + " [" + getCurrentTime() + "]");
+
+        setActivityLogs(activityLogs);
+
+    };
 
     useEffect(() => {
         if(userInfo.email === ""){
@@ -376,7 +396,7 @@ export function Calculator(){
                 </nav>
                 </div>
 
-                <div className="price-analysis-container bg-light rounded ml-3">
+            <div className="price-analysis-container bg-light rounded ml-3">
                 <div className='form-inline mb-3'>
                     <div className='mr-3 form-group'>
                     <label>Total Amount (RM):</label>
@@ -435,7 +455,25 @@ export function Calculator(){
                 <div className='mt-3'>
                     <button className='btn btn-primary' onClick={filterRecord}>Submit</button>
                 </div>
+
+                <div className="mt-1">
+                    <span className="font-weight-bold">Activity logs</span>
+
+                    <div className="text-light bg-dark mt-2" id="log-container">
+                        {
+                            activityLogs.map((activity, index) => {
+
+                                return(
+                                    <div key={index} className="pt-2">
+                                        {index+1 + ". "}{activity}
+                                    </div>
+                                )
+                            })
+                        }
+                    </div>
+                </div>
             </div>
+
             </div>
 
             {/* Modal */}

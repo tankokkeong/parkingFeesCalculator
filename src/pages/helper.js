@@ -27,6 +27,17 @@ export const dateFormatter = (dateInput) =>{
     return day + "/" +  month + "/" + year;
 };
 
+export const getCurrentTime = () => {
+    var date = new Date();
+
+    // Get hour, minute, and second
+    var hour = checkTime(date.getHours()); 
+    var minute = checkTime(date.getMinutes()); 
+    var second = checkTime(date.getSeconds()); 
+
+    return hour + ":" +  minute + ":" + second;
+};
+
 export const dateInputFormatter = (dateInput) =>{
     var date = new Date(dateInput);
 
