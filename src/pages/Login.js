@@ -1,4 +1,4 @@
-import { authentication } from "./helper";
+import { authentication, setCookie, getCookie } from "./helper";
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -15,27 +15,37 @@ export default function Login(){
         //Display Loader
         document.getElementById("login-loader").style.display = "";
 
-        //Login Action
-        const message = await authentication(email, password);
-
-        if(message.hasOwnProperty("uid")){
-            window.location.href = "/Calculator";
-        }
-        else{
-            setErrorMessage("Incorrect email or password");
+        if(email.trim().length === 0 && password.length === 0){
+            setErrorMessage("You cannot leave empty field(s)!");
             //Remove Loader
             document.getElementById("login-loader").style.display = "none";
         }
-        // console.log(message);
+        else{
+            //Login Action
+            const message = await authentication(email, password);
+
+            if(message.hasOwnProperty("uid")){
+                setCookie("parkingFeesUID", message.uid, 7);
+                window.location.href = "/Calculator";
+            }
+            else{
+                setErrorMessage("Incorrect email or password");
+                //Remove Loader
+                document.getElementById("login-loader").style.display = "none";
+            }
+            // console.log(message);
+        }
+        
     };
 
     useEffect(() => {
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                navigate("/Calculator", { replace: true});
-            }
-        });
+        if(getCookie("parkingFeesUID") !== ""){
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    navigate("/Calculator", { replace: true});
+                }
+            });
+        }
     });
 
     return (
@@ -47,12 +57,14 @@ export default function Login(){
                     <div className="input-container">
                         <div className="form-group">
                             <label htmlFor="exampleInputEmail1">Email address</label>
-                            <input type="email" className="form-control" id="email" onChange={e => setEmail(e.currentTarget.value)} />
+                            <input type="email" className="form-control" id="email" onChange={e => setEmail(e.currentTarget.value)} 
+                            onKeyUp={e => {if (e.keyCode === 13) Submit()}}/>
                         </div>
 
                         <div className="form-group">
                             <label htmlFor="exampleInputPassword1">Password</label>
-                            <input type="password" className="form-control" id="password" onChange={e => setPassword(e.currentTarget.value)}/>
+                            <input type="password" className="form-control" id="password" onChange={e => setPassword(e.currentTarget.value)}
+                            onKeyUp={e => {if (e.keyCode === 13) Submit()}}/>
                             No account? <a href="SignUp">Sign Up</a> now!
                         </div>
                         

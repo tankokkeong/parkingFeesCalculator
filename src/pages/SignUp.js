@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { setCookie, getCookie } from './helper';
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword } from "firebase/auth";
 
 export function SignUp(){
@@ -15,33 +16,51 @@ export function SignUp(){
         //Display Loader
         document.getElementById("signup-loader").style.display = "";
 
-        if(password !== confirmPassword){
-            setErrorMessage("Password and confirm password are different!");
-            //Remove Loader
-            document.getElementById("signup-loader").style.display = "none";
+        if(email.trim().length === 0){
+            setErrorMessage("You cannot leave the field empty");
         }
         else{
-            createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                alert("User created successfully");
-                navigate("/Calculator", { replace: true});
-
-            })
-            .catch((error) => {
-                setErrorMessage("This email already exists");
+            if(password !== confirmPassword){
+                setErrorMessage("Password and confirm password are different!");
                 //Remove Loader
                 document.getElementById("signup-loader").style.display = "none";
-            });
+            }
+            else{
+                createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("User created successfully");
+                    // console.log(userCredential.user.uid)
+                    setCookie("parkingFeesUID", userCredential.user.uid, 7);
+                    navigate("/Calculator", { replace: true});
+    
+                })
+                .catch((error) => {
+                    if(error.code === "auth/invalid-email"){
+                        setErrorMessage("The email format is invalid!");
+                    }
+                    else if(error.code === "auth/weak-password"){
+                        setErrorMessage("Your password cannot be less than 6 characters!");
+                    }
+                    else{
+                        setErrorMessage("This email already exists!");
+                    }
+                    //Remove Loader
+                    document.getElementById("signup-loader").style.display = "none";
+                });
+            }
         }
     };
 
     useEffect(() => {
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                navigate("/Calculator", { replace: true});
-            }
-        });
+        if(getCookie("parkingFeesUID") !== ""){
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    navigate("/Calculator", { replace: true});
+                }
+            });
+        }
+        
     });
 
     return(
@@ -52,17 +71,17 @@ export function SignUp(){
 
                     <div className="input-container">
                         <div className="form-group mt-2">
-                            <label for="exampleInputEmail1">Email address</label>
+                            <label htmlFor="exampleInputEmail1">Email address</label>
                             <input type="email" className="form-control" id="email" aria-describedby="emailHelp" onChange={e => setEmail(e.currentTarget.value)} />
                         </div>
 
                         <div className="form-group mt-2">
-                            <label for="exampleInputPassword1">Password</label>
+                            <label htmlFor="exampleInputPassword1">Password</label>
                             <input type="password" className="form-control" id="password" onChange={e => setPassword(e.currentTarget.value)} />
                         </div>
 
                         <div className="form-group mt-2">
-                            <label for="exampleInputPassword1">Confirm Password</label>
+                            <label htmlFor="exampleInputPassword1">Confirm Password</label>
                             <input type="password" className="form-control" id="confirm-password" onChange={e => setConfirmPassword(e.currentTarget.value)} />
                             Already have an account? <a href="/">Login now</a>!
                         </div>

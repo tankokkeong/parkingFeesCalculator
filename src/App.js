@@ -5,6 +5,7 @@ import  Login  from './pages/Login';
 import { Calculator } from './pages/Calculator';
 import { SignUp } from './pages/SignUp';
 import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+import { setCookie } from './pages/helper';
 import { useState, useEffect } from 'react';
 
 
@@ -16,6 +17,7 @@ function App() {
   const Logout = async () => {
     
     await signOut(auth).then(() => {
+      setCookie("parkingFeesUID", "", -7);
       window.location.href = "/";
     }).catch((error) => {
       // An error happened.
@@ -30,7 +32,7 @@ function App() {
         if (user) {
             setUserEmail(user.email);
             setUserID(user.uid);
-            console.log(user)
+            // console.log(user)
         }
       });
     }
@@ -85,6 +87,7 @@ function App() {
           <Route path="/" element={<Login />} />  
           <Route path="Calculator" element={<Calculator />} />  
           <Route path="SignUp" element={<SignUp />} />
+          <Route path="*" element={<Login />} />  
         </Routes>
         
       </Router>  
