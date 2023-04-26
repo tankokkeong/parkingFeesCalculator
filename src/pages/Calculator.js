@@ -279,23 +279,24 @@ export function Calculator(){
     };
 
     useEffect(() => {
-        if(userInfo.email === ""){
-            onAuthStateChanged(auth, (user) => {
-                if (!user) {
-                    navigate("/", { replace: true});
-                }
-                else{
+       
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                navigate("/", { replace: true});
+            }
+            else{
+                if(userInfo.email === ""){
                     const info = {email : user.email, uid: user.uid};
                     setUserInfo(info);
                 }
-            });
-        }
 
+                if(!isRead){
+                    readRecords();
+                    setIsRead(true);
+                }
+            }
+        });
 
-        if(!isRead){
-            readRecords();
-            setIsRead(true);
-        }
     });
 
 
